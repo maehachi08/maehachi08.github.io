@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "jekyll + GitHub Pages"
-date:   2017-08-21 21:00:01 -0600
+date:   2018-08-3 21:00:01 -0600
 categories:
   - jekyll
   - GitHub Pages
@@ -54,7 +54,7 @@ jekyll 3.6.0
   ```
 $ mkdir jekyll-sites
 $ cd jekyll-sites/
-$ jekyll new my_sites
+$ bundle exec jekyll new my_sites --force
 ```
 
 ### 3. ディレクトリ構成
