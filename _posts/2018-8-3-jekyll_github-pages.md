@@ -44,7 +44,7 @@ WebサイトのデフォルトURLはレポジトリ名と同じ`http://username.
   ```sh
 $ gem install jekyll
 $ jekyll --version
-jekyll 3.6.0
+jekyll 3.8.3
 ```
 
 ### 2. サイトの作成
@@ -52,9 +52,8 @@ jekyll 3.6.0
 `jekyll` でサイトを構築するには `jekyll new` コマンドで作成します。
 
   ```
-$ mkdir jekyll-sites
+$ bundle exec jekyll new jekyll-sites --force
 $ cd jekyll-sites/
-$ bundle exec jekyll new my_sites --force
 ```
 
 ### 3. ディレクトリ構成
@@ -62,32 +61,27 @@ $ bundle exec jekyll new my_sites --force
    * 詳細は[Directory structure](https://jekyllrb.com/docs/structure/) を参照ください
 
 ```
-my_sites/
-  │
-  │ # 404 Page not found のテンプレート
-  ├ 404.html
-  │
-  │ # my_sites サイトで利用するgemライブラリ
-  ├ Gemfile
-  │
-  │ # Gemfileのロックファイル
-  ├ Gemfile.lock
-  │
-  │ # jekyll の設定ファイル
-  │ # refs https://jekyllrb.com/docs/configuration/
-  ├ _config.yml
-  │
-  │ # /about/ にアクセスした際に表示されるページ
-  ├ about.md
-  │
-  │ # buildした際の _site/index.html のソース
-  ├ index.md
-  │
-  │ # 投稿記事(動的コンテンツ)の置き場
-   └ _posts
-         │
-         │ # welcomeページ
-　       └  2017-10-08-welcome-to-jekyll.markdown
+jekyll-sites/
+    ├ 404.html
+    ├ Gemfile
+    ├ Gemfile.lock
+    │
+    │ # jekyll の設定ファイル
+    │ # refs https://jekyllrb.com/docs/configuration/
+    ├ _config.yml
+    │
+    │ # /about/ にアクセスした際に表示されるページ
+    ├ about.md
+    │
+    │ # buildした際の _site/index.html のソース
+    ├ index.md
+    │
+    │ # 投稿記事(動的コンテンツ)の置き場
+    └_posts
+        │
+        │ # welcomeページ
+        └2017-10-08-welcome-to-jekyll.markdown
+
 ```
 
 ### 4. ローカルで公開してみる
@@ -112,17 +106,29 @@ $ jekyll server --drafts
 #### buildで生成される `_sites` ディレクトリ以下の構成
 
   ```
-my_sites/
-   └ _site
-　       ├  404.html
-　       ├  feed.xml
-　       ├  index.html
-　       ├  about
-　       │     └  index.html
-　       ├  assets
-　       │     └  main.css
-　       └  jekyll
-　             └  update/2017/10/08/welcome-to-jekyll.html
+jekyll-sites/
+    │
+    │ # 投稿記事(動的コンテンツ)の置き場
+    └_site/
+        │
+        ├ 404.html
+        │
+        ├ feed.xml
+        │
+        ├ index.html
+        │
+        │
+        ├ about
+        │    └ index.html
+        │
+        │
+        ├ assets
+        │    ├ minima-social-icons.svg
+        │    └ main.css
+        │
+        └jekyll
+             └ _site/jekyll/update/YYY/mm/dd/welcome-to-jekyll.html
+
   ```
 
 ### 5. ブラウザでアクセスしてみる
