@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: posts
 title:  "jekyll + GitHub Pages"
 date:   2018-08-3 21:00:01 -0600
 categories:
