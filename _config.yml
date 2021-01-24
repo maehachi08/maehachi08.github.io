@@ -43,9 +43,7 @@ kramdown:
 ###############################
 # Build settings
 ###############################
-theme:
-remote_theme: "mmistakes/minimal-mistakes@4.21.0"
-minimal_mistakes_skin    : "dirt" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
+theme: "asobi-card"
 
 
 ###############################
@@ -79,51 +77,3 @@ author:
       icon: "fab fa-fw fa-github"
       url: "https://github.com/maehachi08"
 
-# Reading Files
-include:
-  - .htaccess
-  - _pages
-
-classes: wide
-
-head_scripts:
-
-###############################
-# minimal-mistake: Author settings
-#
-# minimal-mistake theme のsidebar.html で利用される情報です
-###############################
-defaults:
-  # _posts
-  - scope:
-      path: ""
-      type: posts
-    values:
-      classes: wide
-      layout: single
-      author_profile: true
-      read_time: false
-      comments: false
-      share: true
-      related: true
-  # _pages
-  - scope:
-      path: ""
-      type: pages
-    values:
-      layout: single
-      author_profile: true
-  # _portfolio
-  - scope:
-      path: ""
-      type: portfolio
-    values:
-      layout: single
-      author_profile: true
-      share: true
-
-# Collections
-collections:
-  portfolio:
-    output: true
-    permalink: /:collection/:path/

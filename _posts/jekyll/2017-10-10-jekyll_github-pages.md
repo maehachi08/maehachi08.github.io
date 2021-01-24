@@ -1,10 +1,11 @@
 ---
-layout: posts
+layout: post
+date:   2017-10-10 21:00:01 -0600
+thumbnail: "/images/github_pages_top.jpg"
 title:  "jekyll + GitHub Pages"
-date:   2018-08-3 21:00:01 -0600
-categories:
+tags:
   - jekyll
-  - GitHub Pages
+  - gh-pages
 ---
 
 [jekyll](https://jekyllrb.com/)とは、**MarkdownからHTMLを生成する静的サイトジェネレータ** です。
@@ -44,7 +45,7 @@ WebサイトのデフォルトURLはレポジトリ名と同じ`http://username.
   ```sh
 $ gem install jekyll
 $ jekyll --version
-jekyll 3.8.3
+jekyll 3.6.0
 ```
 
 ### 2. サイトの作成
@@ -52,8 +53,9 @@ jekyll 3.8.3
 `jekyll` でサイトを構築するには `jekyll new` コマンドで作成します。
 
   ```
-$ bundle exec jekyll new jekyll-sites --force
+$ mkdir jekyll-sites
 $ cd jekyll-sites/
+$ jekyll new my_sites
 ```
 
 ### 3. ディレクトリ構成
@@ -61,27 +63,32 @@ $ cd jekyll-sites/
    * 詳細は[Directory structure](https://jekyllrb.com/docs/structure/) を参照ください
 
 ```
-jekyll-sites/
-    ├ 404.html
-    ├ Gemfile
-    ├ Gemfile.lock
-    │
-    │ # jekyll の設定ファイル
-    │ # refs https://jekyllrb.com/docs/configuration/
-    ├ _config.yml
-    │
-    │ # /about/ にアクセスした際に表示されるページ
-    ├ about.md
-    │
-    │ # buildした際の _site/index.html のソース
-    ├ index.md
-    │
-    │ # 投稿記事(動的コンテンツ)の置き場
-    └_posts
-        │
-        │ # welcomeページ
-        └2017-10-08-welcome-to-jekyll.markdown
-
+my_sites/
+  │
+  │ # 404 Page not found のテンプレート
+  ├ 404.html
+  │
+  │ # my_sites サイトで利用するgemライブラリ
+  ├ Gemfile
+  │
+  │ # Gemfileのロックファイル
+  ├ Gemfile.lock
+  │
+  │ # jekyll の設定ファイル
+  │ # refs https://jekyllrb.com/docs/configuration/
+  ├ _config.yml
+  │
+  │ # /about/ にアクセスした際に表示されるページ
+  ├ about.md
+  │
+  │ # buildした際の _site/index.html のソース
+  ├ index.md
+  │
+  │ # 投稿記事(動的コンテンツ)の置き場
+   └ _posts
+         │
+         │ # welcomeページ
+　       └  2017-10-08-welcome-to-jekyll.markdown
 ```
 
 ### 4. ローカルで公開してみる
@@ -106,29 +113,17 @@ $ jekyll server --drafts
 #### buildで生成される `_sites` ディレクトリ以下の構成
 
   ```
-jekyll-sites/
-    │
-    │ # 投稿記事(動的コンテンツ)の置き場
-    └_site/
-        │
-        ├ 404.html
-        │
-        ├ feed.xml
-        │
-        ├ index.html
-        │
-        │
-        ├ about
-        │    └ index.html
-        │
-        │
-        ├ assets
-        │    ├ minima-social-icons.svg
-        │    └ main.css
-        │
-        └jekyll
-             └ _site/jekyll/update/YYY/mm/dd/welcome-to-jekyll.html
-
+my_sites/
+   └ _site
+　       ├  404.html
+　       ├  feed.xml
+　       ├  index.html
+　       ├  about
+　       │     └  index.html
+　       ├  assets
+　       │     └  main.css
+　       └  jekyll
+　             └  update/2017/10/08/welcome-to-jekyll.html
   ```
 
 ### 5. ブラウザでアクセスしてみる

@@ -1,0 +1,28 @@
+---
+layout: default
+permalink: /categories/
+---
+
+<div class="ui stackable">
+
+  <div class="container ui segment top">
+    <h2 class="ui large header">
+      <i class="fa fa-tags fa-xs"></i>
+      Categories
+      <div class="ui divider"></div>
+    </h2>
+
+    <div class="ui grid">
+      <div class="sixteen wide column">
+        <div class="ui horizontal list">
+          {% for category in site.categories %}
+            <div class="item">
+              <a href="{{ site.baseurl }}/categories/{{ category[0] | slugize }}" class="ui middle aligned tag label">{{ category[0] }}</a>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

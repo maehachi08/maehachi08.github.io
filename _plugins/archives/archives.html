@@ -1,0 +1,124 @@
+---
+layout: default
+permalink: /archives/
+---
+{% comment %}
+  The hash structure of of page.posts_year_month assed from plugin.
+
+
+  {% for year_item in page.posts_year_month %}
+      {% if forloop.first == true %}
+        first item
+      {% endif %}
+      {% capture year %}{{ year_item[0] }}{% endcapture %}
+      {{ year }}
+      <br>
+      {% for month_item in page.posts_year_month[year] %}
+          {% capture month %}{{ month_item[0] }}{% endcapture %}
+          {{ month }}
+          <br>
+          {% for posts in page.posts_year_month[year][month] %}
+              {% for post_details in posts %}
+                  {% capture key %}{{ post_details[0] }}{% endcapture %}
+                  {% capture value %}{{ post_details[1] }}{% endcapture %}
+                  {{ key | append: ": " | append: value }}
+                  <br>
+              {% endfor %}
+              <br>
+          {% endfor %}
+      {% endfor %}
+      <br>
+      <br>
+  {% endfor %}
+{% endcomment %}
+
+<div class="ui stackable">
+  <div class="container ui segment top">
+    <h2 class="ui large header">
+      <i class="fa fa-tags fa-xs"></i>
+      Archives
+      <div class="ui divider"></div>
+    </h2>
+    <div class="ui grid">
+      <div class="four wide column">
+        <div class="ui vertical fluid tabular menu">
+          {% for year_item in page.posts_year_month %}
+            {% capture year %}{{ year_item[0] }}{% endcapture %}
+            {% if forloop.first == true %}
+              <a class="item active" data-tab="{{ year }}">{{ year }}</a>
+            {% else %}
+              <a class="item" data-tab="{{ year }}">{{ year }}</a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="twelve wide stretched column">
+        {% for year_item in page.posts_year_month %}
+          {% capture year %}{{ year_item[0] }}{% endcapture %}
+          {% if forloop.first == true %}
+            <div class="ui segment tab active" data-tab="{{ year }}">
+          {% else %}
+            <div class="ui segment tab" data-tab="{{ year }}" style="margin: 0;">
+          {% endif %}
+            {% for month_item in page.posts_year_month[year] %}
+              {% capture month %}{{ month_item[0] }}{% endcapture %}
+              <h4 class="ui midium header">
+                <i class="fa fa-tags fa-xs"></i>
+                {{ month }}
+                <div class="ui divider"></div>
+              </h4>
+
+              <!-- start masonry block -->
+              <div class="ui three stackable cards column grid" id="masonry">
+                {% for posts in page.posts_year_month[year][month] %}
+                  {% for post_details in posts %}
+                    {% capture key %}{{ post_details[0] }}{% endcapture %}
+                    {% capture value %}{{ post_details[1] }}{% endcapture %}
+                    {% if key == 'title' %}
+                      {% capture title %}{{ value }}{% endcapture %}
+                    {% elsif key == 'url' %}
+                      {% capture url %}{{ value }}{% endcapture %}
+                    {% elsif key == 'date' %}
+                      {% capture date %}{{ value }}{% endcapture %}
+                    {% elsif key == 'tags' %}
+                      {% capture tags %}{{ value }}{% endcapture %}
+                    {% elsif key == 'thumbnail' %}
+                      {% capture thumbnail %}{{ value }}{% endcapture %}
+                    {% elsif key == 'content_excerpt' %}
+                      {% capture content_excerpt %}{{ value }}{% endcapture %}
+                    {% endif %}
+                  {% endfor %}
+                  <div class="ui card item" style="min-height: 250px; min-width: 150px;">
+                    <div class="content">
+                      <div class="header">
+                        <a href="{{ url | relative_url }}">{{ title }}</a>
+                      </div>
+                      <div class="ui image">
+                        <img src="{{ thumbnail }}" />
+                      </div>
+                      <div class="meta">
+                        <span>{{ date | date: "%Y/%m/%d %H:%M" }}</span>
+                      </div>
+                      <div class="description">{{ content_excerpt | markdownify }}</div>
+                    </div>
+                    <div class="extra content">
+                      {% assign tags_array = tags | split: ',' %}
+                      {% for tag in tags_array %}
+                        <a class="ui tag label mini" href="{{ site.baseurl }}/tags/{{ tag | slugize }}">
+                          {{ tag }}
+                        </a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+              <!-- end masonry block -->
+
+            {% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>

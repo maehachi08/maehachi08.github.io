@@ -1,0 +1,19 @@
+---
+layout: default
+---
+
+<div class="ui stackable">
+  <div class="container ui segment top">
+    <h2 class="ui large header">
+      <i class="fa fa-tags fa-xs"></i>
+      {{ page.tag }}
+      <div class="ui divider"></div>
+    </h2>
+
+    <div class="ui three stackable cards column grid" id="masonry">
+      {% for post in page.posts %}
+        {% include post_card.html post=post %}
+      {% endfor %}
+    </div>
+  </div>
+</div>
