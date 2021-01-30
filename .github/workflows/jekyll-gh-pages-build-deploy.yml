@@ -18,6 +18,9 @@ jobs:
         bundle config set path 'vendor/bundle'
         bundle install
 
+    - name: jekyll-theme-asobi-card files copy
+      run: bash `bundle info --path asobi-card 2>/dev/null`/bin/asobi-card-setup.sh
+
     - name: Jekyll Build
       run: bundle exec jekyll build
 
