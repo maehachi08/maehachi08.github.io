@@ -1,0 +1,17 @@
+.code-block-header {
+  position: relative;
+}
+
+.code-block-header::before {
+  content: attr(data-lang);
+  background: #dce4eb;
+  color: #56799b;
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 1px 10px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}

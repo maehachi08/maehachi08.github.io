@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+  <meta charaset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge, chrome=1" />
+  <title>Jekyll sample</title>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.3.2/highlight.min.js"></script>
+  <!-- css and javascript -->
+
+
+
+
+<!-- font-awesome -->
+<link
+  rel="stylesheet"
+  href="http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+<link
+  rel="stylesheet"
+  href="https://use.fontawesome.com/releases/v5.0.10/css/all.css"
+  integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg"
+  crossorigin="anonymous">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- jquery -->
+<script src="/assets/js/jquery.min.js"></script>
+
+
+
+
+
+<!-- semantic-ui -->
+<link rel="stylesheet" href="/assets/semantic-ui/semantic.min.css">
+<script src="/assets/semantic-ui/semantic.min.js"></script>
+
+
+
+
+<!-- custom -->
+<link rel="stylesheet" href="/assets/css/index.css">
+<link rel="stylesheet" href="/assets/css/code_block_custom.css">
+<link rel="stylesheet" href="/assets/css/solarized-dark.css">
+<link rel="stylesheet" href="/assets/css/semantic-ui_custom.css">
+<script src="/assets/js/index.js"></script>
+<script src="/assets/js/lunr/lunr.js"></script>
+<script src="/assets/js/lunr/lunr.stemmer.support.js"></script>
+<script src="/assets/js/lunr/tinyseg.js"></script>
+<script src="/assets/js/lunr/lunr.ja.js"></script>
+<script src="/assets/js/lunr/lunr.multi.js"></script>
+
+</head>
+
+<body>
+  <!-- Navigation Bar -->
+<div class="ui fixed menu">
+  <div class="menu">
+    <div id="nav_sidebar" class="item"><i class="icon large grey content"></i></div>
+  </div>
+
+  <!-- Site Ttitle -->
+  <a href="/" class="header item">maehachi08 Anything Blog</a>
+
+  <div class="right item">
+    <form id="site_search" action="get" class="ui form icon input">
+      <input type="search" id="search_box" placeholder="Search...">
+      <i class="search icon"></i>
+    </form>
+  </div>
+
+</div>
+
+
+<!-- Navigation Side Bar -->
+<div class="ui sidebar inverted vertical menu">
+  <div class="item">Menu</div>
+  
+    <a class="item" href="/">HOME</a>
+  
+    <a class="item" href="/archives/">ARCHIVES</a>
+  
+    <a class="item" href="/tags/">TAGS</a>
+  
+    <a class="item" href="/categories/">CATEGORIES</a>
+  
+</div>
+
+
+  <div class="contents_body ui container">
+    <div class="page_contents">
+      <div class="ui segment">
+  2020/11/16
+  <div class="ui huge header">
+    RailsログをlogrageでJSONで出してみた
+  </div>
+
+  
+    <a class="ui tag label" href="/tags/rails">
+      rails
+    </a>
+  
+    <a class="ui tag label" href="/tags/lograge">
+      lograge
+    </a>
+  
+
+  <div class="ui divider"></div>
+
+  <div class="ui container">
+    <p>Rails6で実装中のAPIサーバのリクエストログ(<code class="language-plaintext highlighter-rouge">log/development.log</code> 等に出るあれです) をJSONにして出したい。</p>
+
+<h2 id="経緯">経緯</h2>
+
+<p>fluentdが動作するサイドカーコンテナからログ転送する際、in_tailのmultiline formatでパースするのは現実的ではないため。(SQLクエリーのレスポンスタイムはSQLクエリーの情報としてパースしたい、なども)</p>
+
+<h2 id="設定">設定</h2>
+
+<ol>
+  <li>Gemfileに必要なライブラリを追加する
+    <ul>
+      <li>ログフォーマットにJSONを指定するために <code class="language-plaintext highlighter-rouge">logstash-event</code> が必要</li>
+      <li>
+        <p>SQLクエリー結果をいい感じにJSONにするために <code class="language-plaintext highlighter-rouge">lograge-sql</code> が必要</p>
+
+        <pre><code class="language-ruby:Gemfile"> gem 'lograge'
+ gem 'logstash-event'
+ gem 'lograge-sql'
+</code></pre>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>bundle install する</p>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">app/controllers/application_controller.rb</code> にappend_info_to_payloadメソッドを追加
+    <ul>
+      <li>logrageのlog eventにdefault以外のレコードを追加したい場合など</li>
+      <li>
+        <p>後述する <code class="language-plaintext highlighter-rouge">config/initializers/lograge.rb</code> で(defaultでは入らない)独自の情報をログに出したい場合、ここで payload hashに追加しておく</p>
+
+        <pre><code class="language-ruby:app/controllers/application_controller.rb">class ApplicationController &lt; ActionController::API
+  def append_info_to_payload(payload)
+    super
+    payload[:ip] = request.remote_ip
+    payload[:host] = request.host
+    payload[:referer] = request.referer
+    payload[:user_agent] = request.user_agent
+  end
+end
+</code></pre>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>logrageの設定を行う</p>
+
+    <pre><code class="language-ruby:config/initializers/lograge.rb">require 'lograge/sql/extension'
+
+Rails.application.configure do
+  config.lograge.enabled = true
+  config.lograge.base_controller_class = 'ActionController::API'
+  config.lograge.keep_original_rails_log = true
+  config.lograge.logger = ActiveSupport::Logger.new "#{Rails.root}/log/json-#{Rails.env}.log"
+  config.lograge.formatter = Lograge::Formatters::Json.new
+
+  # enable Lograge::Sql
+  # https://github.com/iMacTia/lograge-sql
+  config.lograge_sql.keep_default_active_record_log = true
+
+  # Lograge::Sql Customize
+  #   - https://github.com/iMacTia/lograge-sql#customization
+  #
+  # Lograge::Sql デフォルト設定では sql_queries に全手のSQLやdurationがStringで纏まっていて見にくい
+  # 以下のようにクエリー毎に分割して可読性を高めておく
+  #   "sql_queries": [
+  #     {
+  #       "name": "Youtube Load",
+  #       "duration": 83.85,
+  #       "sql": "SELECT `youtubes`.* FROM `youtubes` WHERE `youtubes`.`id` = 'gCxVOXYmqJU' LIMIT 1"
+  #     },
+  #     ...
+  config.lograge_sql.extract_event = Proc.new do |event|
+    { name: event.payload[:name], duration: event.duration.to_f.round(2), sql: event.payload[:sql] }
+  end
+  config.lograge_sql.formatter = Proc.new do |sql_queries|
+    sql_queries
+  end
+
+  # ログフォーマットをカスタマイズ
+  # default(stable):
+  #   {
+  #     "method": "GET",
+  #     "path": "/v1/unit_groups",
+  #     "format": "html",
+  #     "controller": "V1::UnitGroupsController",
+  #     "action": "index",
+  #     "status": 200,
+  #     "duration": 107.19,
+  #     "view": 65.68,
+  #     "db": 0
+  #   }
+  #
+  # default(error):
+  #   {
+  #     "method": "GET",
+  #     "path": "/v1/youtubes/aaa",
+  #     "format": "html",
+  #     "controller": "V1::YoutubesController",
+  #     "action": "entry",
+  #     "status": 404,
+  #     "error": "ActiveRecord::RecordNotFound: Couldn't find Youtube with 'id'=aaa",
+  #     "duration": 67.74,
+  #     "view": 0,
+  #     "db": 62.43
+  #   }
+  #
+  # default formatに対して以下ログ情報を追加する
+  config.lograge.custom_options = lambda do |event|
+    exceptions = %w(controller action format authenticity_token)
+    data = {
+      level: 'info',
+      host: event.payload[:host],
+      ip: event.payload[:ip],
+      referer: event.payload[:referer],
+      user_agent: event.payload[:user_agent],
+      time: Time.now.iso8601,
+      params: event.payload[:params].except(*exceptions)
+    }
+    if event.payload[:exception]
+      data[:level] = 'fatal'
+      data[:exception] = event.payload[:exception]
+      data[:exception_backtrace] = event.payload[:exception_object].backtrace[0..9]
+    end
+    data
+  end
+end
+</code></pre>
+  </li>
+</ol>
+
+<h4 id="補足">補足</h4>
+
+<h5 id="1-lograge-sql">1. lograge-sql</h5>
+
+<ul>
+  <li>https://github.com/iMacTia/lograge-sql
+    <ul>
+      <li>logrageにもIssueは起票されているが、現状では将来的に不要になるかもしれない
+        <ul>
+          <li>https://github.com/roidrage/lograge/issues/299</li>
+          <li>https://github.com/roidrage/lograge/issues/263</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>
+    <p>railsのリクエストログ(default)のSQLクエリーログ</p>
+
+    <pre><code class="language-text:"> Processing by V1::UnitGroupsController#index as HTML
+   Youtube Load (65.2ms)  SELECT `youtubes`.* FROM `youtubes` ORDER BY published ASC LIMIT 1
+   ↳ app/helpers/application_helper.rb:5:in `block in first_entry_datetime'
+</code></pre>
+  </li>
+  <li>
+    <p>lograge-sql を使ってlogaregeで出したSQLクエリーログ</p>
+
+    <pre><code class="language-text:"> {
+   "name": "Youtube Load",
+   "duration": 66.16,
+   "sql": "SELECT `youtubes`.* FROM `youtubes` ORDER BY published ASC LIMIT 1"
+ },
+</code></pre>
+  </li>
+</ul>
+
+
+  </div>
+</div>
+
+    </div>
+  </div>
+
+
+  <script src="/assets/js/lunr/search.js"></script>
+  <script>
+      $('.item').click(function(){
+         $('.active').removeClass('active');
+         $(this).addClass('active');
+      });
+      $('.tabular.menu .item').tab({history:false});
+
+      $('#nav_sidebar').click(function() {
+          $('.ui.sidebar').sidebar('toggle');
+      });
+
+
+      $('.menu .item')
+        .tab()
+      ;
+      hljs.initHighlightingOnLoad();
+  </script>
+
+  <template id="card_template">
+    <div class="ui card item" style="min-height: 250px; min-width: 150px;">
+      <div class="content">
+        <div class="header">
+          <a href=""></a>
+        </div>
+        <div class="ui image">
+          <img src="" />
+        </div>
+        <div class="meta">
+          <span></span>
+        </div>
+        <div class="description"></div>
+      </div>
+      <div class="extra content">
+      </div>
+    </div>
+  </template>
+
+</body>
+
+</html>

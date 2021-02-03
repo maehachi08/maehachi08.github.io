@@ -1,0 +1,13 @@
+/* semantic-ui custom */
+body.pushable>.pusher, .ui.segment {
+    /*background: #f3f3f3;*/
+    background: #FCFAF2;
+}
+
+.ui.segment {
+    margin-bottom: 50px;
+}
+
+.ui.segment {
+  margin: 0;
+}

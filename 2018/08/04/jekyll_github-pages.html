@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+  <meta charaset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge, chrome=1" />
+  <title>Jekyll sample</title>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.3.2/highlight.min.js"></script>
+  <!-- css and javascript -->
+
+
+
+
+<!-- font-awesome -->
+<link
+  rel="stylesheet"
+  href="http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+<link
+  rel="stylesheet"
+  href="https://use.fontawesome.com/releases/v5.0.10/css/all.css"
+  integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg"
+  crossorigin="anonymous">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- jquery -->
+<script src="/assets/js/jquery.min.js"></script>
+
+
+
+
+
+<!-- semantic-ui -->
+<link rel="stylesheet" href="/assets/semantic-ui/semantic.min.css">
+<script src="/assets/semantic-ui/semantic.min.js"></script>
+
+
+
+
+<!-- custom -->
+<link rel="stylesheet" href="/assets/css/index.css">
+<link rel="stylesheet" href="/assets/css/code_block_custom.css">
+<link rel="stylesheet" href="/assets/css/solarized-dark.css">
+<link rel="stylesheet" href="/assets/css/semantic-ui_custom.css">
+<script src="/assets/js/index.js"></script>
+<script src="/assets/js/lunr/lunr.js"></script>
+<script src="/assets/js/lunr/lunr.stemmer.support.js"></script>
+<script src="/assets/js/lunr/tinyseg.js"></script>
+<script src="/assets/js/lunr/lunr.ja.js"></script>
+<script src="/assets/js/lunr/lunr.multi.js"></script>
+
+</head>
+
+<body>
+  <!-- Navigation Bar -->
+<div class="ui fixed menu">
+  <div class="menu">
+    <div id="nav_sidebar" class="item"><i class="icon large grey content"></i></div>
+  </div>
+
+  <!-- Site Ttitle -->
+  <a href="/" class="header item">maehachi08 Anything Blog</a>
+
+  <div class="right item">
+    <form id="site_search" action="get" class="ui form icon input">
+      <input type="search" id="search_box" placeholder="Search...">
+      <i class="search icon"></i>
+    </form>
+  </div>
+
+</div>
+
+
+<!-- Navigation Side Bar -->
+<div class="ui sidebar inverted vertical menu">
+  <div class="item">Menu</div>
+  
+    <a class="item" href="/">HOME</a>
+  
+    <a class="item" href="/archives/">ARCHIVES</a>
+  
+    <a class="item" href="/tags/">TAGS</a>
+  
+    <a class="item" href="/categories/">CATEGORIES</a>
+  
+</div>
+
+
+  <div class="contents_body ui container">
+    <div class="page_contents">
+      <div class="ui segment">
+  2018/08/04
+  <div class="ui huge header">
+    jekyll + GitHub Pages
+  </div>
+
+  
+    <a class="ui tag label" href="/tags/jekyll">
+      jekyll
+    </a>
+  
+    <a class="ui tag label" href="/tags/gh-pages">
+      gh-pages
+    </a>
+  
+
+  <div class="ui divider"></div>
+
+  <div class="ui container">
+    <p><a href="https://jekyllrb.com/">jekyll</a>とは、<strong>MarkdownからHTMLを生成する静的サイトジェネレータ</strong> です。
+Markdownファイルにあれこれ書いてコマンドでHTMLに変換できます。</p>
+
+<p><a href="https://pages.github.com/">GitHub Pages</a>とは、 <strong>GitHubレポジトリに置いたHTMLを公開することができるホスティングサービス</strong> です。</p>
+
+<p>これらを組み合わせることで普段書き慣れたMarkdownを使い、面倒なサーバ管理などもせず、ブログなどのサイトを公開することが可能です。</p>
+
+<p>備忘メモとして、勉強したことを書き留めて置こうと思います。</p>
+
+<hr />
+
+<h2 id="github-pages">GitHub Pages</h2>
+
+<p><a href="https://pages.github.com/">pages.github.com</a></p>
+
+<p><a href="https://pages.github.com/"><img src="/images/github_pages_top.jpg" alt="" /></a></p>
+
+<p><strong><a href="https://pages.github.com/">GitHub Pages</a></strong>とは、<code class="language-plaintext highlighter-rouge">username.github.io</code> というレポジトリに静的コンテンツを置くことでWebサイトとして公開できるものです。
+WebサイトのデフォルトURLはレポジトリ名と同じ<code class="language-plaintext highlighter-rouge">http://username.github.io</code>となります。
+ちなみに、<code class="language-plaintext highlighter-rouge">username</code>は自分のGitHubアカウント名に置き換えてください。</p>
+
+<p><strong>GitHub Pages</strong>としてWebページを作成することでコンテンツをGit管理にできるほか、GitHubレポジトリに置けることでバックアップとしての意味合いも果たします。</p>
+
+<p>この<a href="https://maehachi08.github.io/">サイト</a> は静的ファイルジェネレータの<a href="https://github.com/jekyll/jekyll">mojombo/jekyll</a>を使って生成したHTMLを <strong>GitHub Pages</strong> で公開しています。</p>
+
+<hr />
+
+<h2 id="jekyll">jekyll</h2>
+
+<h3 id="1-インストール">1. インストール</h3>
+
+<p><code class="language-plaintext highlighter-rouge">jekyll</code> は<a href="https://rubygems.org/gems/jekyll">Gemsライブラリ</a> として登録されているので <code class="language-plaintext highlighter-rouge">gem install</code> で入ります。</p>
+
+<div class="language-sh highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>gem <span class="nb">install </span>jekyll
+<span class="nv">$ </span>jekyll <span class="nt">--version</span>
+jekyll 3.6.0
+</code></pre></div></div>
+
+<h3 id="2-サイトの作成">2. サイトの作成</h3>
+
+<p><code class="language-plaintext highlighter-rouge">jekyll</code> でサイトを構築するには <code class="language-plaintext highlighter-rouge">jekyll new</code> コマンドで作成します。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mkdir jekyll-sites
+$ cd jekyll-sites/
+$ jekyll new my_sites
+</code></pre></div></div>
+
+<h3 id="3-ディレクトリ構成">3. ディレクトリ構成</h3>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">jekyll new</code> コマンド実行直後のディレクトリ構成は以下のとおりである</li>
+  <li>詳細は<a href="https://jekyllrb.com/docs/structure/">Directory structure</a> を参照ください</li>
+</ul>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>my_sites/
+  │
+  │ # 404 Page not found のテンプレート
+  ├ 404.html
+  │
+  │ # my_sites サイトで利用するgemライブラリ
+  ├ Gemfile
+  │
+  │ # Gemfileのロックファイル
+  ├ Gemfile.lock
+  │
+  │ # jekyll の設定ファイル
+  │ # refs https://jekyllrb.com/docs/configuration/
+  ├ _config.yml
+  │
+  │ # /about/ にアクセスした際に表示されるページ
+  ├ about.md
+  │
+  │ # buildした際の _site/index.html のソース
+  ├ index.md
+  │
+  │ # 投稿記事(動的コンテンツ)の置き場
+   └ _posts
+         │
+         │ # welcomeページ
+　       └  2017-10-08-welcome-to-jekyll.markdown
+</code></pre></div></div>
+
+<h3 id="4-ローカルで公開してみる">4. ローカルで公開してみる</h3>
+
+<p>Markdownで書いた記事などをローカルのブラウザで簡単に確認できる様に <code class="language-plaintext highlighter-rouge">jekyll serve</code> コマンドで組み込みのWebサーバを起動することができます。
+serveサブコマンドのオプションはたくさんあるので <code class="language-plaintext highlighter-rouge">--help</code> オプションで確認して欲しいですが、私がよく使うのは以下のパターンです。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ jekyll server
+$ jekyll server --skip-initial-build
+$ jekyll server --detach
+$ jekyll server --drafts
+</code></pre></div></div>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">jekyll server</code>
+    <ul>
+      <li>フォアグラウンドで起動し、デフォルトでは <code class="language-plaintext highlighter-rouge">127.0.0.1:4000</code> で起動します</li>
+      <li>buildが実行され、 <code class="language-plaintext highlighter-rouge">_sites</code> ディレクトリ以下に公開用HTMLが生成される</li>
+    </ul>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">--skip-initial-build</code> オプションで 公開用HTMLを生成しない(buildをskip)
+    <ul>
+      <li>https://github.com/jekyll/jekyll/blob/master/lib/jekyll/commands/build.rb#L32-L34</li>
+    </ul>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">--detach</code> オプションでバッグラウンドで起動します</li>
+  <li><code class="language-plaintext highlighter-rouge">--drafts</code> オプションで <code class="language-plaintext highlighter-rouge">_drafts</code> ディレクトリ以下を公開用HTMLが生成される</li>
+</ul>
+
+<h4 id="buildで生成される-_sites-ディレクトリ以下の構成">buildで生成される <code class="language-plaintext highlighter-rouge">_sites</code> ディレクトリ以下の構成</h4>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>my_sites/
+   └ _site
+　       ├  404.html
+　       ├  feed.xml
+　       ├  index.html
+　       ├  about
+　       │     └  index.html
+　       ├  assets
+　       │     └  main.css
+　       └  jekyll
+　             └  update/2017/10/08/welcome-to-jekyll.html
+</code></pre></div></div>
+
+<h3 id="5-ブラウザでアクセスしてみる">5. ブラウザでアクセスしてみる</h3>
+
+<p><code class="language-plaintext highlighter-rouge">jekyll server</code> コマンドを実行したローカル環境のブラウザで <code class="language-plaintext highlighter-rouge">http://127.0.0.1:4000/</code> にアクセスすると以下のようなページが表示されれば、組み込みサーバが起動していることになります。</p>
+
+<p><img src="/images/jekyll_first_top.png" alt="" /></p>
+
+
+  </div>
+</div>
+
+    </div>
+  </div>
+
+
+  <script src="/assets/js/lunr/search.js"></script>
+  <script>
+      $('.item').click(function(){
+         $('.active').removeClass('active');
+         $(this).addClass('active');
+      });
+      $('.tabular.menu .item').tab({history:false});
+
+      $('#nav_sidebar').click(function() {
+          $('.ui.sidebar').sidebar('toggle');
+      });
+
+
+      $('.menu .item')
+        .tab()
+      ;
+      hljs.initHighlightingOnLoad();
+  </script>
+
+  <template id="card_template">
+    <div class="ui card item" style="min-height: 250px; min-width: 150px;">
+      <div class="content">
+        <div class="header">
+          <a href=""></a>
+        </div>
+        <div class="ui image">
+          <img src="" />
+        </div>
+        <div class="meta">
+          <span></span>
+        </div>
+        <div class="description"></div>
+      </div>
+      <div class="extra content">
+      </div>
+    </div>
+  </template>
+
+</body>
+
+</html>

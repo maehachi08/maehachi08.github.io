@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="https://maehachi08.github.io/feed.xml" rel="self" type="application/atom+xml" /><link href="https://maehachi08.github.io/" rel="alternate" type="text/html" /><updated>2021-02-03T12:07:21+00:00</updated><id>https://maehachi08.github.io/feed.xml</id><title type="html">maehachi08 Anything Blog</title><subtitle>Tech...</subtitle><entry><title type="html">RailsログをlogrageでJSONで出してみた</title><link href="https://maehachi08.github.io/rails/2020/11/16/implement-lograge-to-rails6.html" rel="alternate" type="text/html" title="RailsログをlogrageでJSONで出してみた" /><published>2020-11-16T00:00:00+00:00</published><updated>2020-11-16T00:00:00+00:00</updated><id>https://maehachi08.github.io/rails/2020/11/16/implement-lograge-to-rails6</id><content type="html" xml:base="https://maehachi08.github.io/rails/2020/11/16/implement-lograge-to-rails6.html">&lt;p&gt;Rails6で実装中のAPIサーバのリクエストログ(&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;log/development.log&lt;/code&gt; 等に出るあれです) をJSONにして出したい。&lt;/p&gt;
+
+&lt;h2 id=&quot;経緯&quot;&gt;経緯&lt;/h2&gt;
+
+&lt;p&gt;fluentdが動作するサイドカーコンテナからログ転送する際、in_tailのmultiline formatでパースするのは現実的ではないため。(SQLクエリーのレスポンスタイムはSQLクエリーの情報としてパースしたい、なども)&lt;/p&gt;
+
+&lt;h2 id=&quot;設定&quot;&gt;設定&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Gemfileに必要なライブラリを追加する
+    &lt;ul&gt;
+      &lt;li&gt;ログフォーマットにJSONを指定するために &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;logstash-event&lt;/code&gt; が必要&lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;SQLクエリー結果をいい感じにJSONにするために &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;lograge-sql&lt;/code&gt; が必要&lt;/p&gt;
+
+        &lt;pre&gt;&lt;code class=&quot;language-ruby:Gemfile&quot;&gt; gem 'lograge'
+ gem 'logstash-event'
+ gem 'lograge-sql'
+&lt;/code&gt;&lt;/pre&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;bundle install する&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;app/controllers/application_controller.rb&lt;/code&gt; にappend_info_to_payloadメソッドを追加
+    &lt;ul&gt;
+      &lt;li&gt;logrageのlog eventにdefault以外のレコードを追加したい場合など&lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;後述する &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;config/initializers/lograge.rb&lt;/code&gt; で(defaultでは入らない)独自の情報をログに出したい場合、ここで payload hashに追加しておく&lt;/p&gt;
+
+        &lt;pre&gt;&lt;code class=&quot;language-ruby:app/controllers/application_controller.rb&quot;&gt;class ApplicationController &amp;lt; ActionController::API
+  def append_info_to_payload(payload)
+    super
+    payload[:ip] = request.remote_ip
+    payload[:host] = request.host
+    payload[:referer] = request.referer
+    payload[:user_agent] = request.user_agent
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;logrageの設定を行う&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code class=&quot;language-ruby:config/initializers/lograge.rb&quot;&gt;require 'lograge/sql/extension'
+
+Rails.application.configure do
+  config.lograge.enabled = true
+  config.lograge.base_controller_class = 'ActionController::API'
+  config.lograge.keep_original_rails_log = true
+  config.lograge.logger = ActiveSupport::Logger.new &quot;#{Rails.root}/log/json-#{Rails.env}.log&quot;
+  config.lograge.formatter = Lograge::Formatters::Json.new
+
+  # enable Lograge::Sql
+  # https://github.com/iMacTia/lograge-sql
+  config.lograge_sql.keep_default_active_record_log = true
+
+  # Lograge::Sql Customize
+  #   - https://github.com/iMacTia/lograge-sql#customization
+  #
+  # Lograge::Sql デフォルト設定では sql_queries に全手のSQLやdurationがStringで纏まっていて見にくい
+  # 以下のようにクエリー毎に分割して可読性を高めておく
+  #   &quot;sql_queries&quot;: [
+  #     {
+  #       &quot;name&quot;: &quot;Youtube Load&quot;,
+  #       &quot;duration&quot;: 83.85,
+  #       &quot;sql&quot;: &quot;SELECT `youtubes`.* FROM `youtubes` WHERE `youtubes`.`id` = 'gCxVOXYmqJU' LIMIT 1&quot;
+  #     },
+  #     ...
+  config.lograge_sql.extract_event = Proc.new do |event|
+    { name: event.payload[:name], duration: event.duration.to_f.round(2), sql: event.payload[:sql] }
+  end
+  config.lograge_sql.formatter = Proc.new do |sql_queries|
+    sql_queries
+  end
+
+  # ログフォーマットをカスタマイズ
+  # default(stable):
+  #   {
+  #     &quot;method&quot;: &quot;GET&quot;,
+  #     &quot;path&quot;: &quot;/v1/unit_groups&quot;,
+  #     &quot;format&quot;: &quot;html&quot;,
+  #     &quot;controller&quot;: &quot;V1::UnitGroupsController&quot;,
+  #     &quot;action&quot;: &quot;index&quot;,
+  #     &quot;status&quot;: 200,
+  #     &quot;duration&quot;: 107.19,
+  #     &quot;view&quot;: 65.68,
+  #     &quot;db&quot;: 0
+  #   }
+  #
+  # default(error):
+  #   {
+  #     &quot;method&quot;: &quot;GET&quot;,
+  #     &quot;path&quot;: &quot;/v1/youtubes/aaa&quot;,
+  #     &quot;format&quot;: &quot;html&quot;,
+  #     &quot;controller&quot;: &quot;V1::YoutubesController&quot;,
+  #     &quot;action&quot;: &quot;entry&quot;,
+  #     &quot;status&quot;: 404,
+  #     &quot;error&quot;: &quot;ActiveRecord::RecordNotFound: Couldn't find Youtube with 'id'=aaa&quot;,
+  #     &quot;duration&quot;: 67.74,
+  #     &quot;view&quot;: 0,
+  #     &quot;db&quot;: 62.43
+  #   }
+  #
+  # default formatに対して以下ログ情報を追加する
+  config.lograge.custom_options = lambda do |event|
+    exceptions = %w(controller action format authenticity_token)
+    data = {
+      level: 'info',
+      host: event.payload[:host],
+      ip: event.payload[:ip],
+      referer: event.payload[:referer],
+      user_agent: event.payload[:user_agent],
+      time: Time.now.iso8601,
+      params: event.payload[:params].except(*exceptions)
+    }
+    if event.payload[:exception]
+      data[:level] = 'fatal'
+      data[:exception] = event.payload[:exception]
+      data[:exception_backtrace] = event.payload[:exception_object].backtrace[0..9]
+    end
+    data
+  end
+end
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h4 id=&quot;補足&quot;&gt;補足&lt;/h4&gt;
+
+&lt;h5 id=&quot;1-lograge-sql&quot;&gt;1. lograge-sql&lt;/h5&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;https://github.com/iMacTia/lograge-sql
+    &lt;ul&gt;
+      &lt;li&gt;logrageにもIssueは起票されているが、現状では将来的に不要になるかもしれない
+        &lt;ul&gt;
+          &lt;li&gt;https://github.com/roidrage/lograge/issues/299&lt;/li&gt;
+          &lt;li&gt;https://github.com/roidrage/lograge/issues/263&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;railsのリクエストログ(default)のSQLクエリーログ&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code class=&quot;language-text:&quot;&gt; Processing by V1::UnitGroupsController#index as HTML
+   Youtube Load (65.2ms)  SELECT `youtubes`.* FROM `youtubes` ORDER BY published ASC LIMIT 1
+   ↳ app/helpers/application_helper.rb:5:in `block in first_entry_datetime'
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;lograge-sql を使ってlogaregeで出したSQLクエリーログ&lt;/p&gt;
+
+    &lt;pre&gt;&lt;code class=&quot;language-text:&quot;&gt; {
+   &quot;name&quot;: &quot;Youtube Load&quot;,
+   &quot;duration&quot;: 66.16,
+   &quot;sql&quot;: &quot;SELECT `youtubes`.* FROM `youtubes` ORDER BY published ASC LIMIT 1&quot;
+ },
+&lt;/code&gt;&lt;/pre&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</content><author><name></name></author><category term="rails" /><category term="rails" /><category term="lograge" /><summary type="html">Rails6で実装中のAPIサーバのリクエストログ(log/development.log 等に出るあれです) をJSONにして出したい。</summary></entry><entry><title type="html">jekyll + GitHub Pages</title><link href="https://maehachi08.github.io/2018/08/04/jekyll_github-pages.html" rel="alternate" type="text/html" title="jekyll + GitHub Pages" /><published>2018-08-04T03:00:01+00:00</published><updated>2018-08-04T03:00:01+00:00</updated><id>https://maehachi08.github.io/2018/08/04/jekyll_github-pages</id><content type="html" xml:base="https://maehachi08.github.io/2018/08/04/jekyll_github-pages.html">&lt;p&gt;&lt;a href=&quot;https://jekyllrb.com/&quot;&gt;jekyll&lt;/a&gt;とは、&lt;strong&gt;MarkdownからHTMLを生成する静的サイトジェネレータ&lt;/strong&gt; です。
+Markdownファイルにあれこれ書いてコマンドでHTMLに変換できます。&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://pages.github.com/&quot;&gt;GitHub Pages&lt;/a&gt;とは、 &lt;strong&gt;GitHubレポジトリに置いたHTMLを公開することができるホスティングサービス&lt;/strong&gt; です。&lt;/p&gt;
+
+&lt;p&gt;これらを組み合わせることで普段書き慣れたMarkdownを使い、面倒なサーバ管理などもせず、ブログなどのサイトを公開することが可能です。&lt;/p&gt;
+
+&lt;p&gt;備忘メモとして、勉強したことを書き留めて置こうと思います。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;github-pages&quot;&gt;GitHub Pages&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://pages.github.com/&quot;&gt;pages.github.com&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://pages.github.com/&quot;&gt;&lt;img src=&quot;/images/github_pages_top.jpg&quot; alt=&quot;&quot; /&gt;&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;&lt;a href=&quot;https://pages.github.com/&quot;&gt;GitHub Pages&lt;/a&gt;&lt;/strong&gt;とは、&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;username.github.io&lt;/code&gt; というレポジトリに静的コンテンツを置くことでWebサイトとして公開できるものです。
+WebサイトのデフォルトURLはレポジトリ名と同じ&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;http://username.github.io&lt;/code&gt;となります。
+ちなみに、&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;username&lt;/code&gt;は自分のGitHubアカウント名に置き換えてください。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;GitHub Pages&lt;/strong&gt;としてWebページを作成することでコンテンツをGit管理にできるほか、GitHubレポジトリに置けることでバックアップとしての意味合いも果たします。&lt;/p&gt;
+
+&lt;p&gt;この&lt;a href=&quot;https://maehachi08.github.io/&quot;&gt;サイト&lt;/a&gt; は静的ファイルジェネレータの&lt;a href=&quot;https://github.com/jekyll/jekyll&quot;&gt;mojombo/jekyll&lt;/a&gt;を使って生成したHTMLを &lt;strong&gt;GitHub Pages&lt;/strong&gt; で公開しています。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;jekyll&quot;&gt;jekyll&lt;/h2&gt;
+
+&lt;h3 id=&quot;1-インストール&quot;&gt;1. インストール&lt;/h3&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll&lt;/code&gt; は&lt;a href=&quot;https://rubygems.org/gems/jekyll&quot;&gt;Gemsライブラリ&lt;/a&gt; として登録されているので &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;gem install&lt;/code&gt; で入ります。&lt;/p&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;gem &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;jekyll
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;jekyll &lt;span class=&quot;nt&quot;&gt;--version&lt;/span&gt;
+jekyll 3.6.0
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;2-サイトの作成&quot;&gt;2. サイトの作成&lt;/h3&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll&lt;/code&gt; でサイトを構築するには &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll new&lt;/code&gt; コマンドで作成します。&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ mkdir jekyll-sites
+$ cd jekyll-sites/
+$ jekyll new my_sites
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;3-ディレクトリ構成&quot;&gt;3. ディレクトリ構成&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll new&lt;/code&gt; コマンド実行直後のディレクトリ構成は以下のとおりである&lt;/li&gt;
+  &lt;li&gt;詳細は&lt;a href=&quot;https://jekyllrb.com/docs/structure/&quot;&gt;Directory structure&lt;/a&gt; を参照ください&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;my_sites/
+  │
+  │ # 404 Page not found のテンプレート
+  ├ 404.html
+  │
+  │ # my_sites サイトで利用するgemライブラリ
+  ├ Gemfile
+  │
+  │ # Gemfileのロックファイル
+  ├ Gemfile.lock
+  │
+  │ # jekyll の設定ファイル
+  │ # refs https://jekyllrb.com/docs/configuration/
+  ├ _config.yml
+  │
+  │ # /about/ にアクセスした際に表示されるページ
+  ├ about.md
+  │
+  │ # buildした際の _site/index.html のソース
+  ├ index.md
+  │
+  │ # 投稿記事(動的コンテンツ)の置き場
+   └ _posts
+         │
+         │ # welcomeページ
+　       └  2017-10-08-welcome-to-jekyll.markdown
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;4-ローカルで公開してみる&quot;&gt;4. ローカルで公開してみる&lt;/h3&gt;
+
+&lt;p&gt;Markdownで書いた記事などをローカルのブラウザで簡単に確認できる様に &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll serve&lt;/code&gt; コマンドで組み込みのWebサーバを起動することができます。
+serveサブコマンドのオプションはたくさんあるので &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--help&lt;/code&gt; オプションで確認して欲しいですが、私がよく使うのは以下のパターンです。&lt;/p&gt;
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;$ jekyll server
+$ jekyll server --skip-initial-build
+$ jekyll server --detach
+$ jekyll server --drafts
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll server&lt;/code&gt;
+    &lt;ul&gt;
+      &lt;li&gt;フォアグラウンドで起動し、デフォルトでは &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;127.0.0.1:4000&lt;/code&gt; で起動します&lt;/li&gt;
+      &lt;li&gt;buildが実行され、 &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_sites&lt;/code&gt; ディレクトリ以下に公開用HTMLが生成される&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--skip-initial-build&lt;/code&gt; オプションで 公開用HTMLを生成しない(buildをskip)
+    &lt;ul&gt;
+      &lt;li&gt;https://github.com/jekyll/jekyll/blob/master/lib/jekyll/commands/build.rb#L32-L34&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--detach&lt;/code&gt; オプションでバッグラウンドで起動します&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;--drafts&lt;/code&gt; オプションで &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_drafts&lt;/code&gt; ディレクトリ以下を公開用HTMLが生成される&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;buildで生成される-_sites-ディレクトリ以下の構成&quot;&gt;buildで生成される &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;_sites&lt;/code&gt; ディレクトリ以下の構成&lt;/h4&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;my_sites/
+   └ _site
+　       ├  404.html
+　       ├  feed.xml
+　       ├  index.html
+　       ├  about
+　       │     └  index.html
+　       ├  assets
+　       │     └  main.css
+　       └  jekyll
+　             └  update/2017/10/08/welcome-to-jekyll.html
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;5-ブラウザでアクセスしてみる&quot;&gt;5. ブラウザでアクセスしてみる&lt;/h3&gt;
+
+&lt;p&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;jekyll server&lt;/code&gt; コマンドを実行したローカル環境のブラウザで &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;http://127.0.0.1:4000/&lt;/code&gt; にアクセスすると以下のようなページが表示されれば、組み込みサーバが起動していることになります。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/jekyll_first_top.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;</content><author><name></name></author><category term="jekyll" /><category term="gh-pages" /><summary type="html">jekyllとは、MarkdownからHTMLを生成する静的サイトジェネレータ です。 Markdownファイルにあれこれ書いてコマンドでHTMLに変換できます。</summary></entry></feed>

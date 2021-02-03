@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html>
+
+
+<head>
+  <meta charaset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge, chrome=1" />
+  <title>Jekyll sample</title>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.3.2/highlight.min.js"></script>
+  <!-- css and javascript -->
+
+
+
+
+<!-- font-awesome -->
+<link
+  rel="stylesheet"
+  href="http://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+<link
+  rel="stylesheet"
+  href="https://use.fontawesome.com/releases/v5.0.10/css/all.css"
+  integrity="sha384-+d0P83n9kaQMCwj8F4RJB66tzIwOKmrdb46+porD/OvrJ+37WqIM7UoBtwHO6Nlg"
+  crossorigin="anonymous">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- jquery -->
+<script src="/assets/js/jquery.min.js"></script>
+
+
+
+
+
+<!-- semantic-ui -->
+<link rel="stylesheet" href="/assets/semantic-ui/semantic.min.css">
+<script src="/assets/semantic-ui/semantic.min.js"></script>
+
+
+
+
+<!-- custom -->
+<link rel="stylesheet" href="/assets/css/index.css">
+<link rel="stylesheet" href="/assets/css/code_block_custom.css">
+<link rel="stylesheet" href="/assets/css/solarized-dark.css">
+<link rel="stylesheet" href="/assets/css/semantic-ui_custom.css">
+<script src="/assets/js/index.js"></script>
+<script src="/assets/js/lunr/lunr.js"></script>
+<script src="/assets/js/lunr/lunr.stemmer.support.js"></script>
+<script src="/assets/js/lunr/tinyseg.js"></script>
+<script src="/assets/js/lunr/lunr.ja.js"></script>
+<script src="/assets/js/lunr/lunr.multi.js"></script>
+
+</head>
+
+<body>
+  <!-- Navigation Bar -->
+<div class="ui fixed menu">
+  <div class="menu">
+    <div id="nav_sidebar" class="item"><i class="icon large grey content"></i></div>
+  </div>
+
+  <!-- Site Ttitle -->
+  <a href="/" class="header item">maehachi08 Anything Blog</a>
+
+  <div class="right item">
+    <form id="site_search" action="get" class="ui form icon input">
+      <input type="search" id="search_box" placeholder="Search...">
+      <i class="search icon"></i>
+    </form>
+  </div>
+
+</div>
+
+
+<!-- Navigation Side Bar -->
+<div class="ui sidebar inverted vertical menu">
+  <div class="item">Menu</div>
+  
+    <a class="item" href="/">HOME</a>
+  
+    <a class="item" href="/archives/">ARCHIVES</a>
+  
+    <a class="item" href="/tags/">TAGS</a>
+  
+    <a class="item" href="/categories/">CATEGORIES</a>
+  
+</div>
+
+
+  <div class="contents_body ui container">
+    <div class="page_contents">
+      
+
+<div class="ui stackable">
+  <div class="container ui segment top">
+    <h2 class="ui large header">
+      <i class="fa fa-tags fa-xs"></i>
+      Archives
+      <div class="ui divider"></div>
+    </h2>
+    <div class="ui grid">
+      <div class="four wide column">
+        <div class="ui vertical fluid tabular menu">
+          
+            
+            
+              <a class="item active" data-tab="2018">2018</a>
+            
+          
+            
+            
+              <a class="item" data-tab="2020">2020</a>
+            
+          
+        </div>
+      </div>
+      <div class="twelve wide stretched column">
+        
+          
+          
+            <div class="ui segment tab active" data-tab="2018">
+          
+            
+              
+              <h4 class="ui midium header">
+                <i class="fa fa-tags fa-xs"></i>
+                8
+                <div class="ui divider"></div>
+              </h4>
+
+              <!-- start masonry block -->
+              <div class="ui three stackable cards column grid" id="masonry">
+                
+                  
+                  <div class="ui card item" style="min-height: 250px; min-width: 150px;">
+                    <div class="content">
+                      <div class="header">
+                        <a href="">jekyll + GitHub Pages</a>
+                      </div>
+                      <div class="ui image">
+                        <img src="/images/github_pages_top.jpg" />
+                      </div>
+                      <div class="meta">
+                        <span>2018/08/04 03:00</span>
+                      </div>
+                      <div class="description"><p><a href="https://jekyllrb.com/">jekyll</a>とは、<strong>MarkdownからHTMLを生成する静的サイトジェネレータ</strong> です。
+Markdownファイルにあれこれ書いてコマンドでHTMLに変換できます。</p>
+</div>
+                    </div>
+                    <div class="extra content">
+                      
+                      
+                        <a class="ui tag label mini" href="/tags/jekyll">
+                          jekyll
+                        </a>
+                      
+                        <a class="ui tag label mini" href="/tags/ gh-pages">
+                           gh-pages
+                        </a>
+                      
+                    </div>
+                  </div>
+                
+              </div>
+              <!-- end masonry block -->
+
+            
+          </div>
+        
+          
+          
+            <div class="ui segment tab" data-tab="2020" style="margin: 0;">
+          
+            
+              
+              <h4 class="ui midium header">
+                <i class="fa fa-tags fa-xs"></i>
+                11
+                <div class="ui divider"></div>
+              </h4>
+
+              <!-- start masonry block -->
+              <div class="ui three stackable cards column grid" id="masonry">
+                
+                  
+                  <div class="ui card item" style="min-height: 250px; min-width: 150px;">
+                    <div class="content">
+                      <div class="header">
+                        <a href="">RailsログをlogrageでJSONで出してみた</a>
+                      </div>
+                      <div class="ui image">
+                        <img src="" />
+                      </div>
+                      <div class="meta">
+                        <span>2020/11/16 00:00</span>
+                      </div>
+                      <div class="description"><p>Rails6で実装中のAPIサーバのリクエストログ(<code class="language-plaintext highlighter-rouge">log/development.log</code> 等に出るあれです) をJSONにして出したい。</p>
+</div>
+                    </div>
+                    <div class="extra content">
+                      
+                      
+                        <a class="ui tag label mini" href="/tags/rails">
+                          rails
+                        </a>
+                      
+                        <a class="ui tag label mini" href="/tags/ lograge">
+                           lograge
+                        </a>
+                      
+                    </div>
+                  </div>
+                
+              </div>
+              <!-- end masonry block -->
+
+            
+          </div>
+        
+      </div>
+    </div>
+
+  </div>
+</div>
+
+    </div>
+  </div>
+
+
+  <script src="/assets/js/lunr/search.js"></script>
+  <script>
+      $('.item').click(function(){
+         $('.active').removeClass('active');
+         $(this).addClass('active');
+      });
+      $('.tabular.menu .item').tab({history:false});
+
+      $('#nav_sidebar').click(function() {
+          $('.ui.sidebar').sidebar('toggle');
+      });
+
+
+      $('.menu .item')
+        .tab()
+      ;
+      hljs.initHighlightingOnLoad();
+  </script>
+
+  <template id="card_template">
+    <div class="ui card item" style="min-height: 250px; min-width: 150px;">
+      <div class="content">
+        <div class="header">
+          <a href=""></a>
+        </div>
+        <div class="ui image">
+          <img src="" />
+        </div>
+        <div class="meta">
+          <span></span>
+        </div>
+        <div class="description"></div>
+      </div>
+      <div class="extra content">
+      </div>
+    </div>
+  </template>
+
+</body>
+
+</html>
